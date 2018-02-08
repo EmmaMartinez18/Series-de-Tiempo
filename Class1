@@ -1,0 +1,102 @@
+###   1er Class
+
+###   Funciones basicas
+# - Intro
+
+#   Directorio de Trabajo
+
+setwd("C:/Users/Sala-D23/Documents/Series de Tiempo")
+getwd()
+
+#   Calculadora
+
+3+4
+3^4
+3*4-1+2
+
+sqrt(10)   #  Raiz
+exp(10)    #  exp(x) = e^x
+log(10)    #  log base e
+
+log(10,10)
+log(10,base = 10)
+
+squareroot(10)  #ejemplo de error
+
+pi
+
+#############################################
+# Asignación
+
+x = 1000
+x <- 1000
+x + 3
+
+e^3
+e = exp(2)
+e^3
+
+# Vector: Operador c, concatena elementos o vectores:
+
+salarios = c(40000, 50000, 55000)
+salarios <- c(40000, 50000, 55000)
+
+salarios1 = c(40000, 50000, 55000)
+salarios2 <- c(40000, 55000, 50000)
+
+# Combinando vectores
+salarios3 <- c(40000, 50000, 55000)
+salarios4 <- c(10000, 15000, 20000)
+salarios5 <- c(salarios3, salarios4)
+
+# Vectores con distinto tipo de datos
+alumnos <- c("Elisa","Bonifacio", "Edgar")
+alumnos.salarios <- c("Elisa","Bonifacio", "Edgar",40000, 50000, 55000)
+
+# Funciones y vectores
+sum(salarios3)
+length(salarios3)
+sum(salarios3/length(salarios3))
+mean(salarios3)
+
+# Otras funciones: sort(), min(), max(), range(), 
+salarios5 <- c(1000, 2000, 3000)
+salarios3 + salarios5
+salarios3 - salarios5
+
+# Varianza
+x = c(20,22,24,26,28)
+mediax = mean(x)
+(x - mediax)^2 # Diferencia de cuadrados
+sum((x-mediax)^2) #Suma de diferencias al cuadrado
+n = length(x)
+sum((x - mediax)^2)/(n-1)
+
+var(x)
+mean(x)
+sd(x)
+
+#####################################################################################
+#   Instalacion de paquetes
+install.packages("Giza")
+#   Apertura de librerias
+library(Giza)
+
+install.packages("RODBC")
+library(RODBC)
+
+#   Comprehensive R Archive Network (CRAN) y dudas
+??Giza
+
+help(sum)
+help("summary")
+
+###   Lectura de datos
+
+#   Formato csv
+install.packages(c("readr","readxl"))
+library(readr)
+datos_csv <- read_csv()
+
+#   Formato excel
+library(readxl)
