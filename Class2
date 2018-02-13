@@ -1,0 +1,102 @@
+#   Class 2
+#   Lectura de Datos
+#   Instalacion
+
+#   La forma mas facil de leer es instalar todo el tidyverse
+install.packages("tidyverse")
+
+#   Altenativamente, instale solo "readr" que forma de "tidyverse"
+install.packages("readr")
+
+#   readr es una funcion que forma parte de tidyverse
+
+#   read_cvs(): Archivos delimitados por comas
+#   read_tsv(): Archivos delimitados por tabulado
+#   read_delim(): Archivos delimitados generales
+#   read_fwf(): Archivos de ancho fijo
+#   read_table(): Archivos tabulares donde las columnas estan separadas por espacios
+#   read_log(): archivos de registro web
+
+library(tidyverse)
+mtcars <- read.csv(readr_example("mtcars.csv"))
+require(stats)
+mtcars <- data.frame(mtcars)
+
+
+#   Formato cvs
+library(readr)
+datos_csv <- read.csv("C:/Users/Sala-D17/Downloads/ST/clase1.csv")
+
+#   Formato excel
+library(readxl)
+datos_excel <- read_excel("C:/Users/Sala-D17/Downloads/ST/ventas.xlsx")
+
+head(datos_excel)
+tail(datos_excel)
+
+#   Formato spss
+library(haven)
+datos_spss <- read_sav("C:/Users/Sala-D17/Downloads/ST/ejemplo.sav")
+
+#   Formato sas
+datos_sas <- read_sas("C:/Users/Sala-D17/Downloads/ST/arima_est2.sas7bdat")
+
+#   Datos de sitio web
+data2 <- read.table("http://www.bio.ic.ac.uk/research/mijcraw/therbook/data/cancer.txt",)
+head(data2)
+
+
+##########################################################
+#   Almacenamiento datos
+write.csv(datos_csv, "C:/Users/Sala-D17/Downloads/ST/clase1.csv")
+
+#   Datos en formato binario
+install.packages("feather")
+library(feather)
+write_feather(datos_csv, "C:/Users/Sala-D17/Downloads/ST/clase1.csv")
+
+
+##########################################################
+#   Creando matrices
+matrix(2:16, nrow = 4, byrow = TRUE)
+matrix(2:16, nrow = 4, byrow = FALSE)
+
+#   Factor en R "enfermedad, clase social, nivel deingreso"
+ingreso <- c(3,5,4,2,1)   #   Vector numerico de quintiles de ingreso
+
+#   Marco de datos (Dataframe)
+#   Un data frame "imita" un conjunto de datos que tienen la estructura de una matriz,
+#   pero se trata de una lista cuyos elementos son vectores o factores (columnas)
+
+observacion <- c(1,2,3,4,5,6,7,8,9,10)
+nombre <- c("Andres","Paola","Erica","Ariadna","Rafael","Miguel","Mariela","Karen","Alejandro","Fernanda")
+edad <- c(28,17,18,22,30,27,22,24,23,21)
+ciudad <- c("Toluca","Mexico","Guadalajara","Toluca","Monterrey","Toluca","Guadalajara","Jalisco","Veracruz","Oaxaca")
+ingreso <- c(2000,3000,2000,3500,2500,4000,4200,2850,2330,1970)
+alumnos <- data.frame(Indentificador = observacion, persona = nombre, Edad = edad, Ciudad = ciudad, Ingreso = ingreso)
+View(alumnos)
+
+#   Acceder a los datos de un data frame
+#   Leyendo los datos como una matriz
+alumnos[,1]  #  Columnas
+alumnos[1,]  #  Renglones
+alumnos[1,1]
+alumnos[4,]
+
+alumnos[,"Ingreso"]
+alumnos$Ingreso
+
+alumnos[1:3,]
+alumnos[,c(1,2)]
+
+alumnos[alumnos$Edad >= 30,]
+
+#   Creamos otro data frame
+edocivil <- c("Viudo", "Soltero", "Soltero", "Soltero", "Soltero", "Casado", "Casado", "Viudo", "Viudo","Soltero")
+alumnos2 <- data.frame(Identificador = observacion, Estado = edocivil)
+
+#   Podemos combinar "merge" los data frames
+merge(alumnos, alumnos2, by = "Identificador")
+
+#   Ordenar el data frame
+alumnos[order(alumnos$Edad, decreasing = TRUE),]
