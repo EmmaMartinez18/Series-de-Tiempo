@@ -1,0 +1,42 @@
+####      Algunos graficos sencillos
+plot()
+hist()
+boxplot()
+barplot()
+
+set.seed(12345)  #  Funcion para generar aleatorios
+variable_y <- rnorm(30)
+plot(variable_y)
+windows()
+variable_y
+x11()
+
+
+xv <- seq(-3,3,.01)
+yv <- dnorm(xv)
+plot(xv,yv,type = "l", col = 100, main = "Distribucion normal", ylab = "Kilo de oro", xlab = "Periodo")
+x11()
+
+#   type <- c("p", "l", "b", "n", "o", "h", "s", "S", "n")
+
+attach(mtcars)
+par(mfrow = c(3,1)) #   row = fila c(3,1) Muestra tres graficas en una sola 
+hist(wt)
+hist(mpg)
+hist(disp)
+
+attach(mtcars)
+layout(matrix(c(1,1,2,3),4,5,byrow = TRUE))
+hist(wt)
+hist(mpg)
+hist(disp)
+
+require(readxl)
+petroleo <- read_excel("C:/Users/Sala-D17/Downloads/ST/petroleo.xlsx")
+petroleo.ts <- ts(petroleo)  #    time series transformacion a serie de tiempo
+plot(petroleo.ts, col = "blue" , xlab = "Tiempo", ylab = "Precio del Barril", main = "Precio del Barril de Petroleo")
+
+ventas <- read_excel("C:/Users/Sala-D17/Downloads/ST/ventas.xlsx")
+ventas.ts <- ts(ventas)
+plot(ventas.ts, col = "red", xlab = "Tiempo", ylab = "Num. Ventas", main = "Ventas")
+
