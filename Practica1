@@ -1,0 +1,35 @@
+require(readxl)
+differences <- read_excel("C:/Users/Sala-D17/Downloads/ST/differences.xlsx")
+differences2 <- read_excel("C:/Users/Sala-D17/Downloads/ST/differences2.xlsx")
+
+differences.ts <- ts(differences)
+
+plot(differences.ts, ylab = "Serie", xlab = "Periodo", col = "darkblue")
+
+#   Se utiliza el log para suavizar es decir reducir la varianza
+plot(log(differences.ts), ylab = "Log Primeras Diferencias", xlab = "Periodo", col = "red")
+
+plot(diff(log(differences.ts), 12), ylab = "Log Segundas Diferencias Estacionales", xlab = "Periodo", col = "green")
+
+#   Funciones de autocorrelacion
+acf(diff(log(differences.ts), 12))
+
+
+
+
+differences2.ts <- ts(differences)
+
+plot(differences2.ts, ylab = "Serie", xlab = "Periodo", col = "darkblue")
+
+#   Se utiliza el log para suavizar es decir reducir la varianza
+plot(log(differences2.ts), ylab = "Log Primeras Diferencias", xlab = "Periodo", col = "red")
+
+plot(diff(log(differences2.ts), 12), ylab = "Log Segundas Diferencias Estacionales", xlab = "Periodo", col = "green")
+
+plot(diff(diff(log(differences2.ts), 12),1), ylab = "Log Segundas Diferencias Estacionales", xlab = "Periodo", col = "green")
+
+
+#   Funciones de autocorrelacion
+x11()
+acf(diff(diff(log(differences2.ts), 12),1)
+    
