@@ -1,0 +1,58 @@
+#   PROCESO AR(1)
+#   Valor del parametro = 0.75
+x11()
+sed.seed(456) #   semilla de autocorrelacion del proceso
+y <- e <- rnorm(200) #  Objeto que se genera(proceso que se va a simular) proceso normal de 200 replicas
+#   o muestras (al menos 30) 
+for(t in 2:200) y[t] <- 0.75*y[t-1] + e[t] # time fi*y[t-1] + el ruido blanco desde la muestra 2
+#   Es nuestra ocuacion el peso que tiene y-1 en y (correlacion de y con t-1 con parametro .75)
+plot(y)
+
+# Funciones de autocorrelacion 
+par(mfrow = c(2:1))
+plot(y, type = "l", col = "red") 
+acf(y, col = "darkblue")
+#   No es autorregresivo de orden uno
+
+#   El comando AR permite ajustar un modelo autorregresivo AR(1), usando la estimacion de 
+y.ar <- ar(y, method = "mle") #   El metodo Lo hace autorregresivo mediante el metodo de maxima verisimilitud
+y.ar$order  #   Nos especifica de que orden es el proceso
+#   Si es de orden 0 se utilizan medias moviles 
+#   Si es de orden 2 tienen fi 1 y fi 2, lo cual nos genera una ecuacion con ambas fi
+y.ar$ar  #   Valor del parametro
+
+
+# Intervalo de confianza del 95%
+y.ar$ar + c(-1.96, 1.96)*sqrt(y.ar$asy.var)
+
+##  0.88282736 (yt-1) -0.04099100 (yt-2) -0.04277136 (yt-3) -0.10793927 (yt-4) + et
+
+# Funciones de autocorrelacion ar
+acf(y.ar)
+###########################################################################################
+#   Entre mas observaciones tendredemos mejores pronosticos
+#   Proceso AR(2)
+set.seed(10008000)
+ar2 <- e <- rnorm(150)
+for (t in 3:150) ar2[t] <- 0.55*ar2[t-1] - 0.44*ar2[t-2] + e[t]
+plot(ar2, type = "l")
+acf(ar2)
+
+
+#   Utilizando ar
+set.seed(150)
+yar2 <- e <- rnorm(150)
+for (t in 3:150) yar2[t] <- 0.55*yar2[t-1] - 0.44*yar2[t-2] + e[t] 
+y.ar2 <- ar(yar2, method = "mle")
+y.ar2$order
+y.ar2$ar
+
+##################################################################################
+#   Proceso MA(q)
+
+#   MA(1) varianza constante 
+set.seed(135)
+ma1 <- e <- rnorm(300)
+for (t in 2:300) ma1[t] <- e[t] + 0.3*e[t-1]
+plot(ma1, type = "l")
+acf(ma1)
