@@ -1,0 +1,45 @@
+###   CAMINATA ALEATORIA
+#     Simulacion
+ 
+y <- e <- rnorm(1000)
+for(t in 2:1000) y[t] <- y[t-1] + e[t]
+plot(y, type = "l", col = 3)
+
+# La serie exhibe una tendencia creciente
+# Sin embargo, esto es puramente estocastico y debido a la alta correlacion 
+
+# Calcular las funciones de autocorrelacion
+acf(y)
+# Una desimulacion gradual de una alta correlacion serial es caracteristica de una caminata aleatoria
+
+# Las diferencias de primer orden de una caminata aleatoria son series de ruido blanco, 
+# El correlograma de la serie de diferencias se puede usar para evaluar si una serie 
+# determinada se modela razonablemente como una caminata aleatoria
+
+x11(); acf(diff(y))
+
+# No hay patrones obvios en el correlograma, con solo un par de valores marginalmente 
+# estadisticamente significativos.
+# Estos valores significativos se pueden ingnorar por que son pequeños en magnitud, se 
+# espera que aproximandamente el 5% de los valores sean estadisticamente significativos
+# Incluso cuando los valores subyacentes son cero, Por lo tanto, hay buena evidencia de 
+# que la serie simulada en y sigue una caminata aleatoria
+
+# CAMINATA ALEATORIA CON DERIVA
+
+set.seed(123)
+e = rnorm(1000)
+y = cumsum(e)
+ed = e + 0.2
+ed = cumsum(ed)
+plot.ts(ed, ylim = c(-5,55), main = "Caminata Aleatoria con deriva", ylab = "Indicador")
+lines(y, col = 5); abline(h = 0, col = 4, lty = 4); abline(a = 0, b = 0.2, lty = 4)
+
+
+# Notar que linea donde e + 0.2 describe el proceso ruido blanco mas la deriva
+# Las opciones a y b, corresponden al intercepto y a la pendiente asignadas al modelo
+
+acf(y)
+acf(ed)
+acf(diff(y))
+acf(diff(ed))
