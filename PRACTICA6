@@ -1,0 +1,63 @@
+### Metodos Simples de Pronosticos
+
+install.packages("fpp")
+library(fpp)
+
+# Vector Datos
+
+library(readxl)
+ventas <- read_excel("C:/Users/Sala-D17/Downloads/ST/ST1/ejemplo3.xlsx")
+
+ventas.ts <- ts(ventas, start = c(2010,1), frequency = 12)
+plot(ventas.ts, xlab = "Periodo de Tiempo", ylab = "Ventas en Millones", main = "Ventas en millones de Euros")
+
+#   Metodo de Pronostico de la media
+#   Pronosticos con un horizonte de 10
+#   Usualmente se utiliza para: Ventas, Producción
+
+meanf(ventas.ts,10)  #  Proporciona nuestro intervalos de confianza de 80 y 95%
+
+plot(meanf(ventas.ts,10), col = 2)   #    Proporciona donde se encuentra la media
+help(rwf)
+
+#   Metodo Naive "ingenuo" para pronosticos 
+#   Pronosticos con un horizonte de 10
+
+help(naive)
+??naive
+
+naive(ventas.ts, 10)
+plot(naive(ventas.ts, 10), col = 2)   #   Se abren los intervalos de confianza esto se 
+#   da dato que la probabilida de ocurrencia se va reduciendo
+
+
+rwf(ventas.ts, 10)  #   Alternativamente (Otra forma de ver el calculo de Naive)
+plot(rwf(ventas.ts, 10), col = 2)
+
+#   Metodo Naive Estacional para pronosticos
+help(snaive)
+snaive(ventas.ts, 10)
+plot(snaive(ventas.ts), col = 2)
+
+#   Metodo Drift deriva para pronosticos
+rwf(ventas.ts, 10, drift = TRUE)
+plot(rwf(ventas.ts, 10, drift = TRUE), col = 2)
+
+
+#   Comparacion de los metodos( Media, Naive, Naive Estacional y Deriva)
+ventas.tsp <- window(ventas.ts, start = c(200,1), frequency = 12)
+ventas.meanf <- meanf(ventas.tsp, h = 20)
+ventas.naive <- naive(ventas.tsp, h = 20)
+ventas.snaive <- snaive(ventas.tsp, h = 20)
+ventas.drift <- rwf(ventas.tsp, h = 20, drift = TRUE)
+
+plot(ventas.meanf, plot.conf = FALSE, main = "Pronosticos del valor de ventas")
+lines(ventas.naive$mean, col = 4)
+lines(ventas.snaive$mean, col = 7)
+lines(ventas.drift$mean, col = 10)
+legend("top", lty = 1, col = c(1,4,7,10), legend = c("Metodo de la media", "Metodo Naive", "Metodo Naive Estacional", "Metodo Deriva"))
+
+plot(ventas.meanf, shaded = TRUE, main = "Pronosticos del valor de ventas")
+lines(ventas.naive$mean, col = 2)
+lines(ventas.snaive$mean, col = 3)
+legend("top", lty = 1, col = c(4,2,3), legend = c("Metodo de la media", "Metodo Naive", "Metodo Naive Estacional"))
