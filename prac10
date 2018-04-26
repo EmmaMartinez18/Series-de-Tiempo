@@ -1,0 +1,40 @@
+
+library(readxl)
+
+vec1 <- read_excel("C:/Users/Sala-D17/Downloads/ST/250418/vector1.xlsx")
+vec2 <- read_excel("C:/Users/Sala-D17/Downloads/ST/250418/vector2.xlsx")
+vec3 <- read_excel("C:/Users/Sala-D17/Downloads/ST/250418/vector3.xlsx")
+vec4 <- read_excel("C:/Users/Sala-D17/Downloads/ST/250418/vector4.xlsx")
+
+vec1.ts <- ts(vec1)
+vec2.ts <- ts(vec2)
+vec3.ts <- ts(vec3)
+vec4.ts <- ts(vec4)
+
+x11()
+par(mfrow = c(2,2))
+plot(vec1.ts, xlab = "Periodo", ylab = "Ventas de automoviles (cientos)", col = 2)
+plot(vec2.ts, xlab = "Periodo", ylab = "Contratos del banco de Mexico", col = 3)
+plot(vec3.ts, xlab = "Periodo", ylab = "Producccion de electricidad", col = 4)
+plot(diff(vec4.ts), xlab = "Periodo", ylab = "IPC Bolsa Mexicana de Valores", col = 5)
+
+#   Descomposicion de una serie de tiempo 
+estacional1 <- read_excel("C:/Users/Sala-D17/Downloads/ST/250418/estacional1.xlsx")
+estacional1.ts <- ts(estacional1, frequency = 4)
+
+estacional_descom <- decompose(estacional1.ts, type = "multiplicative")
+plot(estacional_descom)
+
+x11()
+par(mfrow = c(3,1))
+plot(estacional_descom$trend, xlab = "Periodo", ylab = "Componente Tendencia", col = "red")
+plot(estacional_descom$seasonal, xlab = "Periodo", ylab = "Componente Estacional", col = "blue")
+plot(estacional_descom$random, xlab = "Periodo", ylab = "Componente Aleatorio", col = "green")
+
+
+#   Pronosticos
+install.packages("forecast")
+library(forecast)
+
+x11()
+plot(snaive(estacional1.ts), xlab = "Indicador", main = "Pronosticos del indicador", col = "darkblue")
