@@ -1,0 +1,332 @@
+######################### ARIMA (p,d,q) ##########################################################
+
+#En un proceso estacionario estacionario sus propiedades no dependen del momento en el que se observa. 
+#Entonces, las series de tiempo con tendencias, o con la estacionalidad, no son estacionarias: 
+#la tendencia y la estacionalidad afectaran el valor de las series de tiempo en diferentes veces. 
+#Por otro lado, una serie de ruido blanco es estacionaria; no importa cuando la observe, 
+#deberia verse de manera similar en cualquier periodo de tiempo.
+
+#Algunos casos pueden ser confusos: una serie temporal con comportamiento ciclico (pero no con tendencia o estacionalidad) es estacionaria. 
+#Esto se debe a que los ciclos no son de longitud fija, por lo que antes de observar la serie no podemos estar seguros de dónde estaran
+#los picos y valles de los ciclos
+
+#En general, una serie temporal estacionaria no tendra patrones predecibles a largo plazo. 
+#Los graficos mostrarán que la serie es mas o menos horizontal (aunque es posible algún comportamiento cíclico) con varianza constante.
+
+library(fpp)
+library(readxl)
+
+huelgas <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/huelgas.xlsx")
+huelgas.ts <- ts(huelgas)
+
+ventas <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/ventas2.xlsx")
+ventas.ts <- ts(ventas)
+
+trigo <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/trigo.xlsx")
+trigo.ts <- ts(trigo)
+
+ganado <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/ganado.xlsx")
+ganado.ts <- ts(ganado)
+
+otros <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/otros.xlsx")
+otros.ts <- ts(otros)
+
+cerveza <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/cerveza.xlsx")
+cerveza.ts <- ts(cerveza)
+
+electricidad <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/electricidad.xlsx")
+electricidad.ts <- ts(electricidad)
+
+petroleo <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/petroleo.xlsx")
+petroleo.ts <- ts(petroleo)
+
+rates <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/rates.xlsx")
+rates.ts <- ts(rates)
+
+windows()
+par(mfrow=c(3,3))
+plot(huelgas.ts)
+plot(ventas.ts, col="red")
+plot(trigo.ts, col="green")
+plot(ganado.ts, col="blue")
+plot(otros.ts, col="brown")
+plot(cerveza.ts, col="purple")
+plot(electricidad.ts, col="darkgoldenrod1")
+plot(rates.ts, col="lightsalmon2")
+plot(petroleo.ts, col="yellow4")
+
+
+acf(huelgas.ts)
+acf(ventas.ts)
+acf(trigo.ts)
+acf(ganado.ts)
+acf(otros.ts)
+acf(cerveza.ts)
+acf(electricidad.ts)
+acf(rates.ts)
+acf(petroleo.ts)
+
+#PRUEBAS ESTADISTICAS DE AUTOCORRELACION PARA PROBAR LA ESTACIONARIEDAD (CORRELOGRAMA)
+#Cuales de los procesos son estacionarios.
+
+############################################################################
+#Estacionariedad meidante diferenciacion
+
+indicador <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/indicador.xlsx")
+
+indicador.ts <- ts(indicador, start=c(1975,1), frequency=292) #292 SON LOS DIAS HABILES
+windows()
+plot(indicador.ts, col="red")
+#no es estacionaria dado que tiene tendencia 
+
+#Q de Ljung-box. Diferenciación
+Box.test(indicador.ts, lag=25, type="Ljung-Box") #ausencia de correlacion serial
+# evalua 
+
+'Box-Ljung test
+
+data:  indicador.ts
+X-squared = 894.2, df = 25, p-value < 2.2e-16 
+
+El p-value < 0.05 lo cual nos dice que hay correlacion serial 
+
+Ha: Al menos un coeficiente no es nulo es decir alguna funcion de autocorrelacion no es 0
+
+Condiferenciacion aproximo un proceso al equilibrio estadistico
+'
+
+#Scatter
+x11()
+indfirst <- diff((indicador.ts)) # diferenciacion de orden 1 del indicador
+plot(indicador.ts, indfirst, pch="circle", lty="dotted")
+
+#Diferencias
+indicaacf <- acf(indicador.ts)
+indicadiff <- acf(diff(indicador.ts))
+indicadiff2 <- acf(diff(indicador.ts, lag=2))
+
+windows()
+plot()
+par(mfrow= c(1,3))
+plot(indicaacf, main="FAC yt")
+plot(indicadiff, main="FAC Primeras diferencias", col="red")
+plot(indicadiff2, main= "FAC Segundas diferencias", col="green")
+
+
+################################################################
+#Prueba de raiz unitaria
+adf.test(indicador.ts, alternative = "stationary")
+
+# significacia de raices unitarias
+'   alpha = .05 y betha = .06
+Augmented Dickey-Fuller Test
+
+data:  indicador.ts
+Dickey-Fuller = -1.8053, Lag order = 4, p-value = 0.6552
+alternative hypothesis: stationary 
+
+
+tiene raices unitarias por lo que no es estacionario por lo cual se rechaza Ha
+
+Dickey-Fuller - si existen las raices unitarias 
+probar que es estacionario
+Ho: No estacionario    estas en betha   fip = |1|
+Ha: Estacionario       estas en alpha
+
+
+NOTA: Se prefiere utilizar Dickey-Fuller Test
+'
+
+#Otra prueba popular de raiz unitaria es la prueba Kwiatkowski-Phillips-Schmidt-Shin (KPSS).
+#Esto invierte las hipotesis, por lo que la hipotesis nula es que los datos son estacionarios. 
+#En este caso, los valores p pequeños (por ejemplo, menos de 0.05) sugieren que se requiere diferenciacion.
+
+kpss.test(indicador.ts)
+' prueba la existencia de raices unitarias o correlacion serial
+
+Ha: No estacionario    
+Ho: Estacionario       
+
+KPSS Test for Level Stationarity
+
+data:  indicador.ts
+KPSS Level = 2.5141, Truncation lag parameter = 2, p-value = 0.01 ---- acepta Ha
+'
+
+###
+medica <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/medica.xlsx")
+
+medica.ts <- ts(medica, start=c(1975,1), frequency=292)
+
+par(mfrow=c(2,2))
+plot(medica.ts)
+plot(log(medica.ts)) # La transformo
+plot(diff(log(medica.ts))) # diferenciacion de la transformacion de la serie
+plot(diff(diff(medica.ts))) # segundas diferencias de la serie
+
+#Prueba estacionariedad: Dickey-Fuller
+adf.test(medica.ts, alternative = "stationary") # es estacionaria y que su p-value < .05 
+
+kpss.test(medica.ts)
+
+
+
+###################################### ESTACIONARIA ######################################
+estacionaria <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/estacionaria.xlsx")
+
+estacionaria.ts <- ts(estacionaria, start=c(2000,1), frequency=12)
+x11()
+plot(estacionaria.ts, col="4")
+
+acf(estacionaria.ts, lag.max = 25)
+
+list(acf(estacionaria.ts))
+
+adf.test(estacionaria.ts)
+
+'Augmented Dickey-Fuller Test
+
+data:  estacionaria.ts
+Dickey-Fuller = -2.7637, Lag order = 4, p-value = 0.2603 > .05 no es estacionario
+al menos  26% de las pruebas no son estacionarias
+alternative hypothesis: stationary'
+
+###################################### DIFERENCIACION ######################################
+
+Box.test(estacionaria.ts, lag=25, type="Ljung-Box")
+
+###Número de diferenciaciones para hacer estacionaria yt
+# numero de diferenciaciones que requieren para que la serie sea estacionario (equilibrio estadistico)
+# maxima diferenciacion que se da en este caso es de 2
+
+ndiffs(indicador.ts, alpha=0.05, test=c("kpss","adf", "pp"), max.d=2)
+#a <- diff(indicador.ts)
+#plot(a)
+#acf(a)
+
+ndiffs(huelgas.ts, alpha=0.05, test=c("kpss","adf", "pp"), max.d=2)
+ndiffs(petroleo.ts, alpha=0.05, test=c("kpss","adf", "pp"), max.d=2)
+ndiffs(ganado.ts, alpha=0.05, test=c("kpss","adf", "pp"), max.d=2)
+ndiffs(otros.ts, alpha=0.05, test=c("kpss","adf", "pp"), max.d=2)
+ndiffs(trigo.ts, alpha=0.05, test=c("kpss","adf", "pp"), max.d=2)
+
+
+
+######################### ARIMA 1 ######################################
+
+help(arima)
+
+library(readxl)
+
+ejemplo1 <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/ar1.xlsx")
+ejemplo1.ts <- ts(ejemplo1)
+
+#estima los valores de los parametros de fi1 fi2 y f3
+fit1 <- arima(ejemplo1.ts[,1], order=c(1,0,0)) #fi1=? 
+fit2 <- arima(ejemplo1.ts[,1], order=c(2,0,0)) #fi1=? + fi2=?
+fit3 <- arima(ejemplo1.ts[,1], order=c(3,0,0)) #fi1=? + fi2=? + f3=?
+
+par(mfrow=c(1,3))
+plot(forecast(fit1))
+plot(forecast(fit2))
+plot(forecast(fit3))
+
+summary(fit1)
+
+'Call:
+arima(x = ejemplo1.ts[, 1], order = c(1, 0, 0))
+
+Coefficients:
+                ar1  intercept
+       fi1     -0.0515     0.7367
+s.e.         0.0778     0.0696
+
+sigma^2 estimated as 0.8766:  log likelihood = -221.91,  aic = 449.82
+
+Training set error measures:
+ME      RMSE       MAE       MPE     MAPE      MASE        ACF1
+Training set -7.34474e-05 0.9362911 0.6710594 -68.38543 200.9647 0.7079035 0.004582866
+'
+
+
+summary(fit2)
+
+'arima(x = ejemplo1.ts[, 1], order = c(2, 0, 0))
+
+Coefficients:
+                     ar1               ar2  intercept
+        fi1 =    -0.0467     fi2 =  0.0944     0.7369
+s.e.              0.0775            0.0776     0.0764
+
+sigma^2 estimated as 0.8687:  log likelihood = -221.17,  aic = 450.35
+
+Training set error measures:
+ME      RMSE       MAE       MPE     MAPE      MASE         ACF1
+Training set -0.0005310127 0.9320423 0.6656756 -76.38265 209.9265 0.7022242 -0.006155743'
+
+summary(fit3)
+'
+arima(x = ejemplo1.ts[, 1], order = c(3, 0, 0))
+
+Coefficients:
+ar1     ar2     ar3  intercept
+-0.0529  0.0976  0.0637     0.7375
+s.e.   0.0777  0.0775  0.0778     0.0813
+
+sigma^2 estimated as 0.8651:  log likelihood = -220.84,  aic = 451.68
+
+Training set error measures:
+
+MEDIDAS DE VALIDADCION DEL MODELO (QUE TAN BUENO ES EL MODELO)
+errores de pronosicado lo ajustado con lo que ya se tiene
+
+ME      RMSE       MAE       MPE     MAPE     MASE          ACF1
+Training set -0.001134568 0.9301079 0.6645844 -77.50832 209.9387 0.701073 -0.0003456206
+'
+
+#El modelo mas propicio es el de arima(1,0,0)
+
+
+ejemplo2 <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/ar2.xlsx")
+ejemplo2.ts <- ts(ejemplo2)
+
+fit4 <- Arima(diff(ejemplo2.ts), order=c(1,0,0))
+fit5 <- Arima(diff(ejemplo2.ts), order=c(2,0,0))
+fit6 <- Arima(diff(ejemplo2.ts), order=c(3,0,0))
+
+par(mfrow=c(1,3))
+plot(forecast(fit4))
+plot(forecast(fit5))
+plot(forecast(fit6))
+
+summary(fit4)
+summary(fit5)
+summary(fit6)
+
+
+help(Arima)
+help(arima)
+
+
+library(readxl)
+ejemplo2 <- read_excel("C:/Users/Sala-D17/Downloads/ST/080518/ar2.xlsx")
+ejemplo2.ts <- ts(ejemplo2)
+
+ma1 <- Arima(diff(ejemplo2.ts), order=c(0,0,1))
+ma2 <- Arima(diff(ejemplo2.ts), order=c(0,0,2))
+ma3 <- Arima(diff(ejemplo2.ts), order=c(0,0,3))
+
+par(mfrow=c(1,3))
+plot(forecast(ma1))
+plot(forecast(ma2))
+plot(forecast(ma3))
+
+summary(ma1)
+summary(ma2)
+summary(ma3)
+
+
+help(Arima)
+help(arima)
+
+
