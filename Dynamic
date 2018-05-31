@@ -1,0 +1,225 @@
+###Modelos dinamicos
+library(fpp)
+
+library(readxl)
+dinamico <- read_excel("C:/Users/Sala-D10/Downloads/dinamico.xlsx")
+
+dinamico.ts <- ts(dinamico)
+
+plot(dinamico.ts, xlab="Periodo",
+     main="Consumo e ingreso en una muestra")
+
+###
+#El objetivo del pronostico es conocer los cambios en 
+#los gastos en funcion de los cambios en los ingresos. 
+#Un aumento en los ingresos no se traduce necesariamente 
+#en un aumento instantaneo del consumo
+#Los datos ya son estacionarios, por lo que no es 
+#necesario realizar ninguna diferenciacion.
+#Entonces, primero regresamos el consumo sobre el ingreso 
+#asumiendo errores AR(2). Los valores de nt resultantes se grafican. 
+#Los posibles modelos ARIMA candidatos incluyen un MA(3) y un AR(2). 
+estimado <- arima(dinamico.ts[,1], xreg=dinamico[,2],
+             order=c(2,0,0))
+x11(); tsdisplay(residuals(estimado), main="Errores del ajuste ARIMA")
+
+#Sin embargo, una exploracion mas profunda revela que un 
+#ARIMA(1,0,2) tiene el valor de AICc mas bajo. 
+#Se reajusta el modelo con errores ARIMA(1,0,2).
+(estimado2 <- arima(dinamico.ts[,1], xreg=usconsumption[,2],
+               order=c(1,0,2)))
+
+#Se prueba que los errores no esten correlacionados
+Box.test(residuals(estimado2),fitdf=5,lag=10,type="Ljung")
+
+###
+#para realizar lso pronosticos se asumira que para los proximos 8 
+#trimestres, el cambio porcentual en el ingreso disponible personal
+#es igual al cambio porcentual medio de los ultimos cuarenta a?os.
+pronosticos1 <- forecast(estimado2, xreg=rep(mean(dinamico.ts[,2]), 8), h=8)
+x11(); plot(pronosticos1,
+     main="Pronosticos para la regresion de los errores de un modelo ARIMA(1,0,2)")
+
+###
+#Regresion con errores ARIMA
+#La funcirn arima() se ajustara a un modelo de regresion con errores
+#ARIMA si se usa el argumento xreg. El argumento de orden especifica
+#el orden del modelo de error ARIMA. Si se especifica diferenciacion, 
+#entonces la diferenciacion se aplica a todas las variables en el 
+#modelo de regresion antes de estimar el modelo. 
+#fit <- Arima(y, xreg=x, order=c(1,1,0))
+
+#La funci?n auto.arima() tambien manejara los terminos de regresion.
+estimado2 <- auto.arima(dinamico.ts[,1], xreg=dinamico.ts[,2])
+
+
+###Desarrollo de pronosticos
+#Para pronosticar un modelo de regresion con errores ARIMA, 
+#se debe pronosticar la parte de regresion del modelo y la parte 
+#ARIMA del modelo, y combinar los resultados. Al igual que con los 
+#modelos de regresion ordinarios, para obtener pronosticos, 
+#primero debemos pronosticar los predictores. Cuando los predictores 
+#se conocen esto es sencillo. Pero cuando los predictores son desconocidos, 
+#debemos modelarlos por separado o usar valores futuros asumidos para cada predictor.
+#Es importante darse cuenta de que los intervalos de prediccion de 
+#los modelos de regresion (con o sin errores ARIMA) no tienen en 
+#cuenta la incertidumbre en las predicciones de los predictores.
+
+#Tendencias estocasticas y deterministas
+#Hay dos formas diferentes de modelar una tendencia lineal. 
+#Se obtiene una tendencia determinista usando el modelo de regresion
+#yt = b0 + b1t + nt
+
+#donde nt es un proceso ARMA.
+
+#Se obtiene una tendencia estocastica usando el modelo
+#yt = b0 + b1t + nt,
+
+#donde nt es un proceso ARIMA con d = 1. En ese caso, puede diferenciarse 
+#ambos lados para que y't = b1 + n't no sea un proceso ARMA. 
+#En otras palabras,
+#yt = yt-1 + b1 + n't
+
+#Que es muy similar a una caminata aleatoria con deriva, pero aqui 
+#el termino de error es un proceso ARMA en lugar de ruido blanco.
+
+
+#Ejemplo
+#Entonces, el modelo de tendencia determinista se obtiene como:
+
+library(fpp)
+library(readxl)
+dinamico2 <- read_excel("C:/Users/Sala-D10/Downloads/dinamico2.xlsx")
+
+dinamico2.ts <- ts(dinamico2)
+
+x11();plot(dinamico2.ts, xlab="Periodo",
+     main="Modelo dinamico 2")
+
+
+auto.arima(dinamico2.ts, d=0, xreg=1:length(dinamico2.ts))
+
+#Que puede escribirse de la siguiente manera: 
+#yt = 0.42 +0.17t + nt
+#nt = 1.04n_{t-1} - 0.34n_{t-2} + et
+#et ~ NID (0.029) 
+
+#El crecimiento estimado en el proceso es de 0.17 unidades por unidad en el regresor.
+
+#Alternativamente, se puede estimar el modelo de tendencia estocastica.
+
+auto.arima(dinamico2.ts, d=1)
+
+#Que puede escribirse de la siguiente manera:
+# yt = 0.15t + nt
+# nt = nt-1 + et
+#et ~ NID (0.032)
+
+#En este caso, el crecimiento estimado en el proceso es de 0.15 unidades por unidad del regresor.
+
+###
+#Hay una suposicion implicita con una tendencia determinista de que la 
+#pendiente de la tendencia no va a cambiar con el tiempo. Por otro lado, 
+#las tendencias estocasticas pueden cambiar y se supone que el crecimiento 
+#estimado es el crecimiento promedio durante el periodo historico, 
+#no necesariamente la tasa de crecimiento que se observara en el futuro. 
+#En consecuencia, es mas seguro pronosticar con tendencias estocasticas, 
+#especialmente para horizontes de pronostico mas largos, ya que los 
+#intervalos de prediccion permiten una mayor incertidumbre en el crecimiento futuro.
+estimado3 <- Arima(dinamico2.ts, order=c(0,1,0), include.drift=TRUE)
+estimado4 <- Arima(dinamico2.ts, order=c(2,0,0), include.drift=TRUE)
+par(mfrow=c(2,1))
+x11();plot(forecast(estimado4), main="Pronosticos con tendencia lineal + errores AR(2)",
+     ylim=c(1,8)) #DETERMINISTICO
+plot(forecast(estimado3), ylim=c(1,8)) #ESTOCASTICO
+
+
+###
+#Predictores rezagados
+
+#A veces, el impacto de un predictor incluido en un modelo de regresion 
+#no sera simple e inmediato. Por ejemplo, una campana de publicidad puede 
+#tener un impacto en las ventas por algun tiempo mas alla del final de 
+#la campana, y las ventas en un mes dependeran de los gastos de publicidad 
+#en cada uno de los ultimos meses. De manera similar, un cambio en la 
+#politica de seguridad de una empresa puede reducir los accidentes de inmediato, 
+#pero a la larga tendra un efecto decreciente a medida que los empleados 
+#tomen menos cuidado a medida que se familiaricen con las nuevas condiciones de trabajo.
+#En estas situaciones, debemos tener en cuenta los efectos rezagados 
+#del predictor. Supongamos que tenemos solo un predictor en nuestro modelo. 
+#Entonces, un modelo que permite efectos rezagados se puede escribir como
+
+# yt = b0 + gamma0xt + gamma1xt-1 +...+ gammakxt-k + nt
+
+#donde nt es un proceso ARIMA. El valor de k se puede seleccionar utilizando 
+#el AIC junto con los valores de p y q para el error ARIMA.
+
+#Ejemplo,
+
+library(readxl)
+retardadas <- read_excel("C:/Users/Sala-D10/Downloads/retardadas.xlsx")
+
+retardadas.ts <- ts(retardadas)
+
+plot(retardadas.ts, main="Serie con variables retardadas", xlab="Periodo")
+
+# Predictores Lagged. probar 0, 1, 2 o 3 retrasos.
+retardadas1 <- cbind(retardadas.ts[,2],
+                c(NA,retardadas.ts[1:39,2]),
+                c(NA,NA,retardadas.ts[1:38,2]),
+                c(NA,NA,NA,retardadas.ts[1:37,2]))
+colnames(retardadas1) <- paste("AdLag",0:3,sep="")
+
+# Eligir la longitud optima de retraso para el proceso basado en AIC
+# Restringir datos para que los modelos utilicen el mismo periodo de ajuste
+#dinamico va sin diferenciacion si no se vuelve estacionario por lo que la diferenciacion es igual a 0 de lo 
+#contrario dejaria de ser dinamica
+estimado1 <- auto.arima(retardadas.ts[4:40,1], xreg=retardadas1[4:40,1], d=0)
+estimado2 <- auto.arima(retardadas.ts[4:40,1], xreg=retardadas1[4:40,1:2], d=0)
+estimado3 <- auto.arima(retardadas.ts[4:40,1], xreg=retardadas1[4:40,1:3], d=0)
+estimado4 <- auto.arima(retardadas.ts[4:40,1], xreg=retardadas1[4:40,1:4], d=0)
+
+estimado1; estimado2; estimado3; estimado4
+# Mejor modelo ajustado a todos los datos (basado en AICc)
+# Reajustar usando todos los datos
+mejor_modelo <- auto.arima(retardadas.ts[,1], xreg=retardadas1[,1:2], d=0)
+
+#Consideraremos incluir otro factor que interviene en el proceso por hasta 
+#cuatro unidades de t; es decir, el modelo puede incluir el factor en el t actual y 
+#los tres t anteriores. Entonces en el siguiente codigo, se excluyen 
+#los primeros tres t para hacer comparaciones justas. 
+#El mejor modelo es el que tiene el menor valor de AICc.
+
+#El modelo elegido incluye el factor de interes solo en el t actual 
+#y el mes anterior, y tiene errores AR (3). El modelo se puede escribir como
+
+#yt = bo + gamma0xt + gammma1xt-1 + nt
+
+#Entonces, 
+#nt = phint-1 + phi2nt-2 + phi3nt-3 + et 
+
+#donde et es ruido blanco
+
+#Pronosticos
+#Podemos calcular pronosticos usando este modelo si asumimos valores futuros 
+#para la variable. Si se estable el valor mensual futuro en 8 unidades, 
+pronosticos8 <- forecast(mejor_modelo, xreg=cbind(rep(8,20),c(retardadas1[40,1],rep(8,19))), h=20)
+x11(); plot(pronosticos8, main="Pronosticos con horizonte 8", ylab="Proceso", col="red")
+
+
+
+###########################################################################################################
+###vectores autorregresivos
+install.packages("vars")
+library(vars)
+VARselect(dinamico.ts, lag.max=8, type="const")$selection
+
+var <- VAR(dinamico.ts, p=3, type="const")
+
+#Portmanteau Test
+serial.test(var, lags.pt=10, type="PT.asymptotic")
+
+summary(var)
+
+pronosticos_vectores <- forecast(var)
+plot(pronosticos_vectores, xlab="Periodo")
